@@ -43,11 +43,13 @@ async function main() {
 
   async function loadPositionsFromUrl() {
     const res = await fetch('data.dat');
-    return res.arrayBuffer()
+    float32arr = new Float32Array(await res.arrayBuffer())
+    return float32arr
   }
 
-  positions = await loadPositionsFromUrl()
+  const positions = await loadPositionsFromUrl();
 
+  console.log('hello world');
   // If someone clicks the button, start the session.
   async function onClickEnterVR() {
     xrSession = await navigator.xr.requestSession("immersive-vr");
@@ -69,7 +71,7 @@ async function main() {
   // Calculate normals and center the bunny.
   bunny.normals = normals.vertexNormals(bunny.cells, bunny.positions);
   bunny.positions = center(bunny.positions);
-  // positions=center(positions)
+  const centered_positions=center(positions)
 
   // Create the regl context.
   const regl = REGL({
@@ -99,7 +101,8 @@ async function main() {
       }`,
     primitive: "points",
     attributes: {
-      position: bunny.positions,
+      position: centered_positions,
+      //position: bunny.positions,
     },
     count: 1000,
     uniforms: {
