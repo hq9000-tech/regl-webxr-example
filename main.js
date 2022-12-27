@@ -41,6 +41,13 @@ async function main() {
   navigator.xr.addEventListener("devicechange", checkForXRSupport);
   checkForXRSupport();
 
+  async function loadPositionsFromUrl() {
+    const res = await fetch('data.dat');
+    return res.arrayBuffer()
+  }
+
+  positions = await loadPositionsFromUrl()
+
   // If someone clicks the button, start the session.
   async function onClickEnterVR() {
     xrSession = await navigator.xr.requestSession("immersive-vr");
@@ -62,6 +69,7 @@ async function main() {
   // Calculate normals and center the bunny.
   bunny.normals = normals.vertexNormals(bunny.cells, bunny.positions);
   bunny.positions = center(bunny.positions);
+  // positions=center(positions)
 
   // Create the regl context.
   const regl = REGL({
@@ -72,30 +80,34 @@ async function main() {
   const cmdRender = regl({
     vert: `
       precision highp float;
-      attribute vec3 position, normal;
+      attribute vec3 position;
       uniform mat4 model, view, projection;
       varying vec3 vNormal;
       void main() {
         gl_Position = projection * view * model * vec4(position, 1);
-        vNormal = normal;
+        gl_PointSize = 1.0;
       }`,
     frag: `
       precision highp float;
       varying vec3 vNormal;
       void main() {
-        gl_FragColor = vec4(vNormal * 0.5 + 0.5, 1);
+        if (length(gl_PointCoord.xy - 0.5) > 0.5) {
+          discard;
+        }
+        
+        gl_FragColor = vec4(1.0, 0.5, 0.5, 1);
       }`,
+    primitive: "points",
     attributes: {
       position: bunny.positions,
-      normal: bunny.normals
     },
+    count: 1000,
     uniforms: {
       model: regl.prop("model"),
       view: regl.prop("view"),
       projection: regl.prop("projection")
     },
     viewport: regl.prop("viewport"),
-    elements: bunny.cells
   });
 
   // Handle an animation frame, either from window.raf or xrSession.raf.
