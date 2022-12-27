@@ -87,7 +87,7 @@ async function main() {
       varying vec3 vNormal;
       void main() {
         gl_Position = projection * view * model * vec4(position, 1);
-        gl_PointSize = 1.0;
+        gl_PointSize = 5.0;
       }`,
     frag: `
       precision highp float;
@@ -104,7 +104,7 @@ async function main() {
       position: centered_positions,
       //position: bunny.positions,
     },
-    count: 1000,
+    count: Math.round(centered_positions.length / 3),
     uniforms: {
       model: regl.prop("model"),
       view: regl.prop("view"),
