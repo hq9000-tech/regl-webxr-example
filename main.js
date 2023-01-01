@@ -41,13 +41,16 @@ async function main() {
   navigator.xr.addEventListener("devicechange", checkForXRSupport);
   checkForXRSupport();
 
-  async function loadPositionsFromUrl() {
-    const res = await fetch('data.dat');
+  async function loadDataFromUrl(url) {
+    const res = await fetch(url);
     float32arr = new Float32Array(await res.arrayBuffer())
     return float32arr
   }
 
-  const positions = await loadPositionsFromUrl();
+  const dataset_name = "organoid_multiplied";
+
+  const positions = await loadDataFromUrl('data_' + dataset_name + '.dat');
+  const colors = await loadDataFromUrl('data_' + dataset_name + '_colors.dat');
 
   console.log('hello world');
   // If someone clicks the button, start the session.
@@ -83,25 +86,32 @@ async function main() {
     vert: `
       precision highp float;
       attribute vec3 position;
+      attribute vec4 color;
+
+      varying highp vec4 fragColor;
+
       uniform mat4 model, view, projection;
       varying vec3 vNormal;
       void main() {
         gl_Position = projection * view * model * vec4(position, 1);
         gl_PointSize = 5.0;
+        fragColor=color;
       }`,
     frag: `
       precision highp float;
-      varying vec3 vNormal;
+      varying vec3 vNormal; 
+      varying vec4 fragColor;     
       void main() {
         if (length(gl_PointCoord.xy - 0.5) > 0.5) {
           discard;
         }
         
-        gl_FragColor = vec4(1.0, 0.5, 0.5, 1);
+        gl_FragColor = fragColor;
       }`,
     primitive: "points",
     attributes: {
       position: centered_positions,
+      color: colors
       //position: bunny.positions,
     },
     count: Math.round(centered_positions.length / 3),
@@ -118,8 +128,10 @@ async function main() {
     // Create and animate the model matrix.
     const model = mat4.create();
     mat4.translate(model, model, [0, 0, -0.5]);
-    mat4.rotateY(model, model, timestamp * 0.001);
-    mat4.rotateX(model, model, timestamp * 0.0013);
+    // mat4.rotateY(model, model, timestamp * 0.001);
+    // mat4.rotateX(model, model, timestamp * 0.0013);
+    mat4.rotateY(model, model, 0 * 0.001);
+    mat4.rotateX(model, model, 0 * 0.0013);
     mat4.scale(model, model, [0.01, 0.01, 0.01]);
     // Create the projection matrix.
     const projection = mat4.perspective(
