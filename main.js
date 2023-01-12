@@ -47,7 +47,7 @@ async function main() {
     return float32arr
   }
 
-  const dataset_name = "organoid_multiplied";
+  const dataset_name = "organoid_multiplied_scaled";
 
   const positions = await loadDataFromUrl('data_' + dataset_name + '.dat');
   const colors = await loadDataFromUrl('data_' + dataset_name + '_colors.dat');
@@ -128,9 +128,9 @@ async function main() {
     // Create and animate the model matrix.
     const model = mat4.create();
     mat4.translate(model, model, [0, 0, -0.5]);
-    // mat4.rotateY(model, model, timestamp * 0.001);
-    // mat4.rotateX(model, model, timestamp * 0.0013);
-    mat4.rotateY(model, model, 0 * 0.001);
+    mat4.rotateY(model, model, timestamp * 0.00005);
+    mat4.rotateX(model, model, timestamp * 0.00005);
+    // mat4.rotateY(model, model, 0 * 0.001);
     mat4.rotateX(model, model, 0 * 0.0013);
     mat4.scale(model, model, [0.01, 0.01, 0.01]);
     // Create the projection matrix.
